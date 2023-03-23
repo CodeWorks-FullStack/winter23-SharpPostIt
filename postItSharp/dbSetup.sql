@@ -10,11 +10,12 @@ CREATE TABLE IF NOT EXISTS accounts(
 -- SECTION albums
 CREATE TABLE albums(
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  ownerId VARCHAR(255) NOT NULL,
+  creatorId VARCHAR(255) NOT NULL,
   title VARCHAR(100) NOT NULL,
   category VARCHAR(50) NOT NULL,
+  coverImg VARCHAR(500) NOT NULL,
 
-  FOREIGN KEY (ownerId) REFERENCES accounts(id) ON DELETE CASCADE
+  FOREIGN KEY (creatorId) REFERENCES accounts(id) ON DELETE CASCADE
 ) default charset utf8 COMMENT '';
 
 ALTER TABLE albums
@@ -42,11 +43,11 @@ JOIN accounts acct ON alb.ownerId = acct.id;
 
 CREATE TABLE pictures(
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  ownerId VARCHAR(255) NOT NULL,
+  creatorId VARCHAR(255) NOT NULL,
   albumId INT NOT NULL,
   imgUrl VARCHAR(500) NOT NULL,
 
-  FOREIGN KEY (ownerId) REFERENCES accounts(id) ON DELETE CASCADE,
+  FOREIGN KEY (creatorId) REFERENCES accounts(id) ON DELETE CASCADE,
   FOREIGN KEY (albumId) REFERENCES albums(id) ON DELETE CASCADE
 ) default charset utf8 COMMENT '';
 
@@ -63,8 +64,46 @@ JOIN albums alb ON alb.id = pic.albumId
 WHERE albumId = 11;
 
 
+-- SECTION COLLABORATORS
+
+CREATE TABLE collaborators(
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  accountId VARCHAR(255) NOT NULL,
+  albumId INT NOT NULL,
+
+  FOREIGN KEY (accountId) REFERENCES accounts(id) ON DELETE CASCADE,
+  FOREIGN KEY (albumId) REFERENCES albums(id) ON DELETE CASCADE
+) default charset utf8 COMMENT '';
 
 
+INSERT INTO collaborators
+(albumId, accountId)
+VALUES
+(1,'634844a08c9d1ba02348913d');
 
+
+-- get collabs for an account
+SELECT
+collab.*,
+acct.*,
+alb.*,
+creator.name AS creatorName
+FROM collaborators collab
+JOIN accounts acct ON collab.accountId = acct.id
+JOIN albums alb ON collab.albumId = alb.id
+JOIN accounts creator ON alb.creatorId = creator.id
+WHERE acct.id = '634844a08c9d1ba02348913d';
+
+-- Get colalbs for a specific album
+SELECT
+collab.*,
+acct.*,
+alb.*,
+creator.name AS creatorName
+FROM collaborators collab
+JOIN accounts acct ON collab.accountId = acct.id
+JOIN albums alb ON collab.albumId = alb.id
+JOIN accounts creator ON alb.creatorId = creator.id
+WHERE alb.id =1;
 
 

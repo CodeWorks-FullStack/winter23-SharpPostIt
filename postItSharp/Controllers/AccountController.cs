@@ -5,12 +5,14 @@ namespace postItSharp.Controllers;
 public class AccountController : ControllerBase
 {
   private readonly AccountService _accountService;
-  private readonly Auth0Provider _auth0Provider;
+  private readonly CollaboratorsService _collaboratorsService;
+  private readonly Auth0Provider _auth;
 
-  public AccountController(AccountService accountService, Auth0Provider auth0Provider)
+  public AccountController(AccountService accountService, Auth0Provider auth0Provider, CollaboratorsService collaboratorsService)
   {
     _accountService = accountService;
-    _auth0Provider = auth0Provider;
+    _auth = auth0Provider;
+    _collaboratorsService = collaboratorsService;
   }
 
   [HttpGet]
@@ -19,8 +21,24 @@ public class AccountController : ControllerBase
   {
     try
     {
-      Account userInfo = await _auth0Provider.GetUserInfoAsync<Account>(HttpContext);
+      Account userInfo = await _auth.GetUserInfoAsync<Account>(HttpContext);
       return Ok(_accountService.GetOrCreateProfile(userInfo));
+    }
+    catch (Exception e)
+    {
+      return BadRequest(e.Message);
+    }
+  }
+
+  [HttpGet("collaborators")]
+  [Authorize]
+  public async Task<ActionResult<List<CollaboratedAlbum>>> GetMyCollabedAlbums()
+  {
+    try
+    {
+      Account userInfo = await _auth.GetUserInfoAsync<Account>(HttpContext);
+      List<CollaboratedAlbum> collabedAlbums = _collaboratorsService.GetMyCollabedAlbums(userInfo.Id);
+      return Ok(collabedAlbums);
     }
     catch (Exception e)
     {

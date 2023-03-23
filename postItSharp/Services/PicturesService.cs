@@ -9,6 +9,12 @@ public class PicturesService
     _repo = repo;
   }
 
+  internal Picture CreatePicture(Picture pictureData)
+  {
+    Picture picture = _repo.CreatePicture(pictureData);
+    return picture;
+  }
+
   internal List<Picture> Find()
   {
     List<Picture> pictures = _repo.FindAll();

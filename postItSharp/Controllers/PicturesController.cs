@@ -26,4 +26,22 @@ public class PicturesController : ControllerBase
       return BadRequest(e.Message);
     }
   }
+
+  [HttpPost]
+  [Authorize]
+  public async Task<ActionResult<Picture>> CreatePicture([FromBody] Picture pictureData)
+  {
+    try
+    {
+      Account userInfo = await _auth.GetUserInfoAsync<Account>(HttpContext);
+      pictureData.CreatorId = userInfo.Id;
+      Picture picture = _picturesService.CreatePicture(pictureData);
+      picture.Creator = userInfo;
+      return picture;
+    }
+    catch (Exception e)
+    {
+      return BadRequest(e.Message);
+    }
+  }
 }

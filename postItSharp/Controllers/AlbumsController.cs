@@ -31,6 +31,21 @@ public class AlbumsController : ControllerBase
     }
   }
 
+  [HttpGet("{id}")]
+  public async Task<ActionResult<Album>> Find(int id)
+  {
+    try
+    {
+      Account userInfo = await _auth.GetUserInfoAsync<Account>(HttpContext);
+      Album album = _albumsService.Get(id, userInfo.Id);
+      return Ok(album);
+    }
+    catch (Exception e)
+    {
+      return BadRequest(e.Message);
+    }
+  }
+
   [HttpGet("{id}/pictures")]
   public ActionResult<List<Picture>> FindPicturesByAlbum(int id)
   {
@@ -38,6 +53,21 @@ public class AlbumsController : ControllerBase
     {
       List<Picture> pictures = _picturesService.FindByAlbum(id);
       return pictures;
+    }
+    catch (Exception e)
+    {
+      return BadRequest(e.Message);
+    }
+  }
+
+  [HttpGet("{id}/collaborators")]
+  public async Task<ActionResult<List<AlbumMember>>> FindCollaboratorsOnAlbum(int id)
+  {
+    try
+    {
+      Account userInfo = await _auth.GetUserInfoAsync<Account>(HttpContext);
+      List<AlbumMember> collaborators = _albumsService.FindCollaboratorsOnAlbum(id, userInfo?.Id);
+      return Ok(collaborators);
     }
     catch (Exception e)
     {
@@ -53,9 +83,9 @@ public class AlbumsController : ControllerBase
     try
     {
       Account userInfo = await _auth.GetUserInfoAsync<Account>(HttpContext);
-      albumData.OwnerId = userInfo.Id;
+      albumData.CreatorId = userInfo.Id;
       Album album = _albumsService.CreateAlbum(albumData);
-      album.Owner = userInfo;
+      album.Creator = userInfo;
       return Ok(album);
     }
     catch (Exception e)
